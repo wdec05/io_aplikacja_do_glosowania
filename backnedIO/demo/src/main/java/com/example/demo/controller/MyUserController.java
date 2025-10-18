@@ -6,6 +6,7 @@ import com.example.demo.service.MyUserService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,5 +28,10 @@ public class MyUserController {
         myUserService.saveMyUser(myUser);
     }
 
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public List<MyUser> getUser(){
+        return myUserService.getAllUsers();
+    }
 
 }
