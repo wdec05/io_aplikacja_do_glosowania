@@ -20,7 +20,9 @@ public class CorsConfig {
                 registry.addMapping("/**")
                         .allowedOrigins("*")
                         .allowedMethods("*")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowedOrigins("http://3.69.167.48:8080")
+                        .allowCredentials(true);
             }
         };
     }
