@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21
+FROM eclipse-temurin:25
 ENV MAVEN_VERSION 3.9.11
 
 WORKDIR /app
