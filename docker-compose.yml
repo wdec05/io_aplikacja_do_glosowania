@@ -1,0 +1,15 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backnedIO/demo
+    ports:
+      - "8004:8004"
+    networks:
+      - app-network
+
+networks:
+  app-network:
