@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController // Ta adnotacja sprawia, że ta klasa będzie wysyłać zapytania API
-@RequestMapping("/api/user") // Każdy endpoint w tej klasie będzie miał prefiks /api/user
+@RequestMapping("/api/user")
+@CrossOrigin(origins = "http://3.69.167.48:8080")// Każdy endpoint w tej klasie będzie miał prefiks /api/user
 public class MyUserController {
     private MyUserService myUserService;
 //    Spring sam zarządza tworzeniem obiektów i wstrzykiwaniem zależności, więc nie musisz ręcznie tworzyć instancji MyUserRepository.
