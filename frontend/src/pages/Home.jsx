@@ -1,37 +1,67 @@
+// src/pages/Home.jsx
 import { useState, useEffect } from "react";
 
 export default function Home() {
   const [contests, setContests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Upewnij się, że ten URL jest poprawny dla Twojego uruchomionego backendu!
+  // Np. 'http://localhost:8080/api/competicion' jeśli backend jest lokalnie
+  // lub 'http://3.69.167.48:8080/api/competicion' jeśli jest na serwerze
+  const API_CONTESTS_URL ='https://io-aplikacja-do-glosowania-1.onrender.com/api/user'; 
 
   useEffect(() => {
-    setContests([
-      {
-        id: 1,
-        name: "Budżet obywatelski Kraków 2025",
-        description: "Głosowanie na miejskie inicjatywy zgłoszone przez mieszkańców.",
-      },
-      {
-        id: 2,
-        name: "Zielone Inicjatywy 2025",
-        description: "Projekty ekologiczne wspierające zrównoważony rozwój miasta.",
-      },
-      {
-        id: 3,
-        name: "Nowe Technologie dla Miast",
-        description: "Innowacyjne pomysły poprawiające jakość życia mieszkańców.",
-      },
-      {
-        id: 4,
-        name: "Konkurs Młodych Talentów",
-        description: "Wybierz najlepszy projekt artystyczny wśród młodych twórców.",
-      },
-      {
-        id: 5,
-        name: "Sport i Aktywność",
-        description: "Projekty promujące zdrowy styl życia i aktywność fizyczną.",
-      },
-    ]);
-  }, []);
+    const fetchContests = async () => {
+      try {
+        const response = await fetch(API_CONTESTS_URL);
+        if (!response.ok) {
+          // Jeśli odpowiedź HTTP nie jest OK (np. 404, 500)
+          throw new Error(`Błąd HTTP! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        setContests(data); // Ustawiamy pobrane dane jako listę konkursów
+      } catch (e) {
+        console.error("Wystąpił błąd podczas pobierania konkursów:", e);
+        setError(e); // Zapisujemy błąd w stanie
+      } finally {
+        setLoading(false); // Niezależnie od sukcesu/porażki, kończymy ładowanie
+      }
+    };
+
+    fetchContests();
+  }, []); // Pusta tablica zależności oznacza, że efekt uruchomi się tylko raz po zamontowaniu komponentu
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white text-black py-12 px-4 flex flex-col items-center justify-center">
+        <div className="text-2xl font-semibold">Ładowanie konkursów...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white text-black py-12 px-4 flex flex-col items-center justify-center">
+        <div className="text-2xl font-semibold text-red-600">
+          Błąd podczas ładowania konkursów: {error.message}
+          <p className="text-lg text-gray-700 mt-2">Sprawdź, czy Twój backend jest uruchomiony na adresie: {API_CONTESTS_URL}</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Jeśli nie ma konkursów, ale nie ma też błędu i już załadowano
+  if (contests.length === 0) {
+    return (
+      <div className="min-h-screen bg-white text-black py-12 px-4 flex flex-col items-center">
+        <div className="border-2 border-black rounded-xl px-8 py-4 mb-10">
+          <h1 className="text-3xl font-bold text-center">Konkursy</h1>
+        </div>
+        <p className="text-xl text-gray-700">Brak dostępnych konkursów.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white text-black py-12 px-4 flex flex-col items-center">
@@ -48,7 +78,8 @@ export default function Home() {
             className="bg-white border border-gray-200 shadow-md rounded-2xl p-6 text-center hover:shadow-lg transition-shadow"
           >
             <h2 className="text-xl font-semibold mb-2">{contest.name}</h2>
-            <p className="text-gray-700 mb-4">{contest.description}</p>
+            {/* Upewnij się, że obiekt contest ma pole 'description' */}
+            <p className="text-gray-700 mb-4">{contest.description}</p> 
             <a
               href={`/contest/${contest.id}`}
               className="inline-block bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
