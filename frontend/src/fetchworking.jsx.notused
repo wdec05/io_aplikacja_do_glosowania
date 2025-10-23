@@ -1,0 +1,41 @@
+import React, { useEffect, useState } from 'react';
+
+function App() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const API_URL ='https://io-aplikacja-do-glosowania-1.onrender.com/api/user'; // Jeśli backend działa lokalnie
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+	  console.log("tutaj");
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        setData(result);
+      } catch (e) {
+        setError(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []); // Pusta tablica zależności oznacza, że efekt uruchomi się raz po zamontowaniu komponentu
+
+  if (loading) return <div>Ładowanie danych...</div>;
+  if (error) return <div>Błąd: {error.message}</div>;
+
+  return (
+    <div>
+      <h1>Dane z Spring Boot na porcie 8004</h1>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
+
+export default App;
