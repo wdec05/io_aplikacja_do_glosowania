@@ -77,9 +77,9 @@ export default function Home() {
             key={contest.id}
             className="bg-white border border-gray-200 shadow-md rounded-2xl p-6 text-center hover:shadow-lg transition-shadow"
           >
-            <h2 className="text-xl font-semibold mb-2">{contest.name}</h2>
+            <h2 className="text-xl font-semibold mb-2">Nr:{contest.id} {contest.email}</h2>
             {/* Upewnij się, że obiekt contest ma pole 'description' */}
-            <p className="text-gray-700 mb-4">{contest.description}</p> 
+            <p className="text-gray-700 mb-4">{contest.email}</p> 
             <a
               href={`/contest/${contest.id}`}
               className="inline-block bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
