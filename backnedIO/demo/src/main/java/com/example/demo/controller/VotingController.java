@@ -28,8 +28,8 @@ public class VotingController {
 
     @PostMapping("/{email}")
     @ResponseStatus(HttpStatus.OK)
-    public void sendEmail(@PathVariable String email,@RequestParam Long competitionId){
-        brevoMailService.sendMail(email,competitionId);
+    public void sendEmail(@PathVariable String email,@RequestParam Long projectId){
+        brevoMailService.sendMail(email,projectId);
     }
 
     @GetMapping("/vote")

@@ -22,7 +22,7 @@ public class BrevoMailService {
     @Value("${brevo.provider}")
     private String provider;
 
-    public void sendMail(String recipientEmail,Long competitionId) {
+    public void sendMail(String recipientEmail,Long projectId) {
 
         // 1. Konfiguracja klienta API (Twój kod)
         ApiClient defaultClient = Configuration.getDefaultApiClient();
@@ -52,13 +52,12 @@ public class BrevoMailService {
         recipient.setEmail(recipientEmail);
         // recipient.setName("Imię Odbiorcy"); // Opcjonalnie
         sendSmtpEmail.setTo(Collections.singletonList(recipient));
-        String baseUrl = "https://io-aplikacja-do-glosowania-1.onrender.com/api/vote/";
+        String baseUrl = "https://io-aplikacja-do-glosowania-1.onrender.com/api";
 
-        // This builds: https://.../api/vote/user@example.com?competitionId=comp-123
-        // Using UriComponentsBuilder is safer as it handles URL encoding
         String fullVoteUrl = UriComponentsBuilder
-                .fromHttpUrl(baseUrl + recipientEmail) // Adds the path variable
-                .queryParam("competitionId", competitionId) // Adds the query param
+                .fromHttpUrl(baseUrl + "/vote") // Path is /vote
+                .queryParam("projectId", projectId) // Add projectId as query param
+                .queryParam("email", recipientEmail)       // Add email as query param
                 .toUriString();
         // Ustawienie treści
         // TODO: Ustaw swój temat i treść
