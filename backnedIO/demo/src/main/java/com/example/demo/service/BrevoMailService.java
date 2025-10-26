@@ -55,14 +55,21 @@ public class BrevoMailService {
         String baseUrl = "https://io-aplikacja-do-glosowania-1.onrender.com/api";
 
         String fullVoteUrl = UriComponentsBuilder
-                .fromHttpUrl(baseUrl + "/vote") // Path is /vote
+                .fromHttpUrl(baseUrl + "/mail/vote") // Path is /vote
                 .queryParam("projectId", projectId) // Add projectId as query param
                 .queryParam("email", recipientEmail)       // Add email as query param
                 .toUriString();
         // Ustawienie treści
         // TODO: Ustaw swój temat i treść
         sendSmtpEmail.setSubject("Testowy e-mail z Brevo API");
-        sendSmtpEmail.setHtmlContent("<html><body><h1>Witaj!</h1><p>aby zaosować , klinkij w link "+ fullVoteUrl +"</p></body></html>");
+        sendSmtpEmail.setHtmlContent(
+                "<html><body>" +
+                        "<h1>Witaj!</h1>" +
+                        "<p>Aby zagłosować, kliknij w poniższy link:</p>" +
+                        // TUTAJ JEST POPRAWKA:
+                        "<p><a href=\"" + fullVoteUrl + "\">Kliknij tutaj, aby zagłosować</a></p>" +
+                        "</body></html>"
+        );
 
         // 4. Wysłanie e-maila (zamiast wywołania getAccount)
         try {
