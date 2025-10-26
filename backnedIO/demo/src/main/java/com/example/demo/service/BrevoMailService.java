@@ -9,6 +9,7 @@ import brevoApi.TransactionalEmailsApi;
 import brevoModel.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
 
@@ -21,7 +22,7 @@ public class BrevoMailService {
     @Value("${brevo.provider}")
     private String provider;
 
-    public void sendMail(String recipientEmail) {
+    public void sendMail(String recipientEmail,Long competitionId) {
 
         // 1. Konfiguracja klienta API (Twój kod)
         ApiClient defaultClient = Configuration.getDefaultApiClient();
@@ -51,12 +52,18 @@ public class BrevoMailService {
         recipient.setEmail(recipientEmail);
         // recipient.setName("Imię Odbiorcy"); // Opcjonalnie
         sendSmtpEmail.setTo(Collections.singletonList(recipient));
+        String baseUrl = "https://io-aplikacja-do-glosowania-1.onrender.com/api/vote/";
 
+        // This builds: https://.../api/vote/user@example.com?competitionId=comp-123
+        // Using UriComponentsBuilder is safer as it handles URL encoding
+        String fullVoteUrl = UriComponentsBuilder
+                .fromHttpUrl(baseUrl + recipientEmail) // Adds the path variable
+                .queryParam("competitionId", competitionId) // Adds the query param
+                .toUriString();
         // Ustawienie treści
         // TODO: Ustaw swój temat i treść
         sendSmtpEmail.setSubject("Testowy e-mail z Brevo API");
-        sendSmtpEmail.setHtmlContent("<html><body><h1>Witaj!</h1><p>To jest testowa wiadomość wysłana przez Brevo.</p></body></html>");
-        sendSmtpEmail.setTextContent("Witaj! To jest testowa wiadomość wysłana przez Brevo.");
+        sendSmtpEmail.setHtmlContent("<html><body><h1>Witaj!</h1><p>aby zaosować , klinkij w link "+ fullVoteUrl +"</p></body></html>");
 
         // 4. Wysłanie e-maila (zamiast wywołania getAccount)
         try {
