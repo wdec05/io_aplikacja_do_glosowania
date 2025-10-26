@@ -38,9 +38,19 @@ public class DataInitializer implements CommandLineRunner {
                 "Budżet Obywatelski 2025 - Pula Ogólnomiejska",
                 new ArrayList<>() // Start with an empty list of voters
         );
+        Competition competition2 = new Competition(
+                "Budżet Obywatelski 2024 - Pula Ogólnomiejska",
+                new ArrayList<>() // Start with an empty list of voters
+        );
+        Competition competition3 = new Competition(
+                "Budżet Obywatelski 2023 - Pula Ogólnomiejska",
+                new ArrayList<>() // Start with an empty list of voters
+        );
 
         // Save it and get the managed object (which has the generated ID)
         Competition savedCompetition = competitionRepository.save(competition);
+        Competition savedCompetition2 = competitionRepository.save(competition2);
+        Competition savedCompetition3 = competitionRepository.save(competition3);
 
         System.out.println("Created Competition with ID: " + savedCompetition.getId());
         String kalenistenikParkPath="static/plac dla kalesniteników.jpg";
@@ -56,6 +66,16 @@ public class DataInitializer implements CommandLineRunner {
         Project proj3 = new Project("plac zabaw ba bronowicahc", "plac zabaw to przyszłocćpolaków , dzięki któremu nasze dziecię będąw 100% skuteczne na rynku pracy",childernpartBytes,0,competition.getId());
 
         projectRepository.saveAll(List.of(proj1, proj2, proj3));
+        Project proj7 = new Project("Projekt trampoliny dla dzieci.", "plac zabaw1",kalenistenikBytes,0,competition2.getId());
+        Project proj8 = new Project("fontanna na wydziale WEIP.", "bardzo ciekawe lorem ipsum na temat fontanny",fontannaBytes,0,competition2.getId());
+        Project proj9 = new Project("plac zabaw", "plac zabaw to przyszłocćpolaków , dzięki któremu nasze dziecię będąw 100% skuteczne na rynku pracy",childernpartBytes,0,competition2.getId());
+
+        projectRepository.saveAll(List.of(proj7, proj8, proj9));
+        Project proj4 = new Project("Projekt lotniska", "plac zabaw1",kalenistenikBytes,0,competition3.getId());
+        Project proj5 = new Project("Ławki na wydziale WIEIT.", "bardzo ciekawe lorem ipsum na temat fontanny",fontannaBytes,0,competition3.getId());
+        Project proj6 = new Project("plac zabaw na rynku", "plac zabaw to przyszłocćpolaków , dzięki któremu nasze dziecię będąw 100% skuteczne na rynku pracy",childernpartBytes,0,competition3.getId());
+
+        projectRepository.saveAll(List.of(proj4, proj5, proj6));
 
         System.out.println("Created 3 new projects linked to the competition.");
         System.out.println("Data initialization complete.");

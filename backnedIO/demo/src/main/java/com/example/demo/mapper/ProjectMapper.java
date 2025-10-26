@@ -6,10 +6,9 @@ import com.example.demo.module.Project;
 public class ProjectMapper {
     public static Project toEntity(ProjectDto projectDto) {
         Project project = new Project();
-        project.setName(projectDto.getName());
         project.setTitle(projectDto.getTitle());
         project.setDescription(projectDto.getDescription());
-        project.setCompetitionId(projectDto.getCompeticionId());
+        project.setCompetitionId(projectDto.getCompetitionId());
         project.setVotes(projectDto.getVotes());
         project.setImage(projectDto.getImage());
         return project;

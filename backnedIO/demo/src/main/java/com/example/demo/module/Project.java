@@ -13,7 +13,6 @@ public class Project {
     private Long id;
 
     private Long competitionId;
-    private String name;
     private String title;
     private String description;
     @Column(name = "data", columnDefinition="LONGBLOB")

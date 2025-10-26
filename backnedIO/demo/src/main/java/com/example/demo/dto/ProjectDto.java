@@ -8,8 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ProjectDto {
-    private Long competicionId;
-    private String name;
+    private Long competitionId;
     private String title;
     private String description;
     @Column(name = "data", columnDefinition="LONGBLOB")
