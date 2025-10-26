@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 
+import com.example.demo.dto.ProjectDto;
 import com.example.demo.module.Project;
 import com.example.demo.service.ProjectService;
 import jdk.jfr.Frequency;
@@ -18,8 +19,8 @@ public class ProjectController {
 
     @PostMapping
     @ResponseStatus(org.springframework.http.HttpStatus.OK)
-    public void saveProject(@RequestBody Project project){
-        projectService.saveProject(project);
+    public void saveProject(@RequestBody ProjectDto projectDto){
+        projectService.saveProject(projectDto);
     }
 
     @GetMapping

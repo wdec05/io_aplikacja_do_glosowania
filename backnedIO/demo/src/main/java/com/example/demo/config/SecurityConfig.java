@@ -22,7 +22,9 @@ public class SecurityConfig {
 
                 // 2. Disable CSRF (this is correct)
                 .csrf(csrf -> csrf.disable())
-
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())
+                )
                 // 3. Make ALL endpoints public (no authentication required)
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()

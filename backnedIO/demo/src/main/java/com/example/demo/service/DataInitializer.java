@@ -6,8 +6,12 @@ import com.example.demo.repository.CompetitionRepository;
 import com.example.demo.repository.ProjectRepository; // <-- Make sure this is your Project repo
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.FileCopyUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,19 +43,40 @@ public class DataInitializer implements CommandLineRunner {
         Competition savedCompetition = competitionRepository.save(competition);
 
         System.out.println("Created Competition with ID: " + savedCompetition.getId());
+        String kalenistenikParkPath="static/plac dla kalesniteników.jpg";
+        String fontannaPath="static/fontanna.jpg";
+        String childernpart="static/plac zabaw.jpg";
 
-        // 3. Create Projects linked to the saved Competition
-        // I'm assuming your Project class has a constructor like:
-        // public Project(String name, String description, Competition competition)
+        byte[] kalenistenikBytes = loadBytesFromClasspath(kalenistenikParkPath);
+        byte[] fontannaBytes = loadBytesFromClasspath(fontannaPath);
+        byte[] childernpartBytes = loadBytesFromClasspath(childernpart);
 
-//        Project proj1 = new Project("Projekt placu zabaw dla dzieci.", "plac zabaw1",,"des3" ,competition.getId());
-//        Project proj2 = new Project(competition.getId(),"plac zabaw2", "Projekt placu zabaw dla dzieci.","des2",0);
-//        Project proj3 = new Project(competition.getId(),"plac zabaw3", "Projekt placu zabaw dla dzieci.","des1",0);
+        Project proj1 = new Project("Projekt placu zabaw dla dzieci.", "plac zabaw1",kalenistenikBytes,0,competition.getId());
+        Project proj2 = new Project("fontanna na wydziale WIEIT.", "bardzo ciekawe lorem ipsum na temat fontanny",fontannaBytes,0,competition.getId());
+        Project proj3 = new Project("plac zabaw ba bronowicahc", "plac zabaw to przyszłocćpolaków , dzięki któremu nasze dziecię będąw 100% skuteczne na rynku pracy",childernpartBytes,0,competition.getId());
 
-        // 4. Save all the new projects
-//        projectRepository.saveAll(List.of(proj1, proj2, proj3));
+        projectRepository.saveAll(List.of(proj1, proj2, proj3));
 
         System.out.println("Created 3 new projects linked to the competition.");
         System.out.println("Data initialization complete.");
     }
+    public static byte[] loadBytesFromClasspath(String path) throws IOException {
+        // ClassPathResource is a Spring utility that makes this easy
+        ClassPathResource resource = new ClassPathResource(path);
+
+        if (!resource.exists()) {
+            throw new IOException("File not found at classpath path: " + path);
+        }
+
+        // Open an InputStream to the resource
+        try (InputStream inputStream = resource.getInputStream()) {
+            // Spring's FileCopyUtils can easily copy the stream to a byte array
+            return FileCopyUtils.copyToByteArray(inputStream);
+
+            // Or using pure Java (since Java 9+):
+            // return inputStream.readAllBytes();
+        }
+    }
+
+
 }

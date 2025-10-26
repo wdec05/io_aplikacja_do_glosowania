@@ -1,9 +1,6 @@
 package com.example.demo.module;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +16,7 @@ public class Project {
     private String name;
     private String title;
     private String description;
+    @Column(name = "data", columnDefinition="LONGBLOB")
     private byte[] image;
     private long votes;
 
