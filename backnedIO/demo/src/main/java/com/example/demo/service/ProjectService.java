@@ -23,4 +23,12 @@ public class ProjectService {
     }
 
     public List<Project> getAllProjects() { return projectRepository.findAll(); }
+
+    public Project getProjectsById(Long id) {
+        return projectRepository.findById(id).orElse(null);
+    }
+
+    public List<Project> getProjectsByCompetitionId(Long competitionId) {
+        return projectRepository.findByCompetitionId(competitionId);
+    }
 }

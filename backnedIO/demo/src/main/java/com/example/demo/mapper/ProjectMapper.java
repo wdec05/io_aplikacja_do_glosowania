@@ -9,7 +9,7 @@ public class ProjectMapper {
         project.setName(projectDto.getName());
         project.setTitle(projectDto.getTitle());
         project.setDescription(projectDto.getDescription());
-        project.setCompeticionId(projectDto.getCompeticionId());
+        project.setCompetitionId(projectDto.getCompeticionId());
         project.setVotes(projectDto.getVotes());
         project.setImage(projectDto.getImage());
         return project;

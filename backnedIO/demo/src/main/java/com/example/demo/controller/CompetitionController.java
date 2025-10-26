@@ -25,4 +25,10 @@ public class CompetitionController {
     public java.util.List<Competition> getCompetitions() {
         return competitionService.getAllCompetitions();
     }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(org.springframework.http.HttpStatus.OK)
+    public Competition getCompetitionById(@PathVariable Long id) {
+        return competitionService.getCompetitionById(id);
+    }
 }

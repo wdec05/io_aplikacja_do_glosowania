@@ -17,4 +17,7 @@ public class CompetitionService {
     public List<Competition> getAllCompetitions() {return competitionRepository.findAll();}
 
 
+    public Competition getCompetitionById(Long id) {
+        return competitionRepository.findById(id).orElse(null);
+    }
 }

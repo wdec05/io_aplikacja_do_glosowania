@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 
 import com.example.demo.dto.ProjectDto;
+import com.example.demo.module.Competition;
 import com.example.demo.module.Project;
 import com.example.demo.service.ProjectService;
 import jdk.jfr.Frequency;
@@ -27,6 +28,18 @@ public class ProjectController {
     @ResponseStatus(org.springframework.http.HttpStatus.OK)
     public List<Project> getProjects() {
         return projectService.getAllProjects();
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(org.springframework.http.HttpStatus.OK)
+    public Project getProjectById(@PathVariable Long id) {
+        return projectService.getProjectsById(id);
+    }
+
+    @GetMapping("/competition/{competitionId}")
+    @ResponseStatus(org.springframework.http.HttpStatus.OK)
+    public List<Project> getProjectsByCompetitionId(@PathVariable Long competitionId) {
+        return projectService.getProjectsByCompetitionId(competitionId);
     }
 
 }

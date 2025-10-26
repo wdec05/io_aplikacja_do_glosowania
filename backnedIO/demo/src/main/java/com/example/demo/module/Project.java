@@ -12,7 +12,7 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private Long competicionId;
+    private Long competitionId;
     private String name;
     private String title;
     private String description;
@@ -22,8 +22,8 @@ public class Project {
 
     public Project(){}
 
-    public Project(String title, String description, byte[] image, long votes, long competicionId) {
-        this.competicionId = competicionId;
+    public Project(String title, String description, byte[] image, long votes, long competitionId) {
+        this.competitionId = competitionId;
         this.title = title;
         this.description = description;
         this.image = image;
