@@ -18,8 +18,8 @@ public class ProjectService {
     }
 
     @Transactional
-    public void saveProject(ProjectDto project) {
-        projectRepository.save(ProjectMapper.toEntity(project)) ;
+    public Project saveProject(ProjectDto project) {
+        return projectRepository.save(ProjectMapper.toEntity(project)) ;
     }
 
     public List<Project> getAllProjects() { return projectRepository.findAll(); }

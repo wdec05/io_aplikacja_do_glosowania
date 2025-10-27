@@ -20,8 +20,8 @@ public class ProjectController {
 
     @PostMapping
     @ResponseStatus(org.springframework.http.HttpStatus.OK)
-    public void saveProject(@RequestBody ProjectDto projectDto){
-        projectService.saveProject(projectDto);
+    public Project saveProject(@RequestBody ProjectDto projectDto){
+        return projectService.saveProject(projectDto);
     }
 
     @GetMapping
