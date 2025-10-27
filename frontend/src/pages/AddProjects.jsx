@@ -6,71 +6,146 @@ export default function AddProjects() {
   const { contestId } = useParams();
   const navigate = useNavigate();
   const [contestName, setContestName] = useState('');
-  const [projects, setProjects] = useState([]); // Przechowuje dodane projekty
-  const [currentProject, setCurrentProject] = useState({ name: '', description: '', imageUrl: '' });
+  const [projects, setProjects] = useState([]); // Przechowuje dodane projekty (pobrane z API)
+  const [currentProject, setCurrentProject] = useState({ title: '', description: '', imageFile: null, imagePreviewUrl: '' });
+  const [isLoadingContest, setIsLoadingContest] = useState(true);
+  const [contestError, setContestError] = useState(null);
+  const [isAddingProject, setIsAddingProject] = useState(false);
+  const [addProjectError, setAddProjectError] = useState(null);
 
-  // Symulacja ładowania nazwy konkursu (zastąp API)
+  const API_COMPETITION_URL = `https://io-aplikacja-do-glosowania-1.onrender.com/api/competition/${contestId}`;
+  const API_PROJECT_URL = `https://io-aplikacja-do-glosowania-1.onrender.com/api/project`;
+  const API_PROJECTS_FOR_CONTEST_URL = `https://io-aplikacja-do-glosowania-1.onrender.com/api/project/competition/${contestId}`;
+
+
+  // Funkcja pomocnicza do konwersji File/Blob na ArrayBuffer, a potem na Array<number>
+  const fileToArrayOfNumbers = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const arrayBuffer = e.target.result;
+        const byteArray = new Uint8Array(arrayBuffer);
+        resolve(Array.from(byteArray));
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  // Ładowanie nazwy konkursu i już dodanych projektów
   useEffect(() => {
-    // W prawdziwej aplikacji pobrałbyś nazwę konkursu po contestId z API
-    const dummyContests = {
-      1: "Budżet obywatelski Kraków 2025",
-      2: "Zielone Inicjatywy 2025",
-      3: "Nowe Technologie dla Miast",
-      4: "Konkurs Młodych Talentów",
-      5: "Sport i Aktywność",
-      999: "Nowy Konkurs (ID 999)", // Dla testów po przekierowaniu
+    const fetchData = async () => {
+      setIsLoadingContest(true);
+      setContestError(null);
+      try {
+        // Fetch competition details
+        const competitionResponse = await fetch(API_COMPETITION_URL);
+        if (!competitionResponse.ok) {
+          throw new Error(`Failed to fetch contest! Status: ${competitionResponse.status}`);
+        }
+        const competitionData = await competitionResponse.json();
+        setContestName(competitionData.name);
+
+        // Fetch existing projects for this competition
+        const projectsResponse = await fetch(API_PROJECTS_FOR_CONTEST_URL);
+        if (!projectsResponse.ok) {
+          throw new Error(`Failed to fetch projects! Status: ${projectsResponse.status}`);
+        }
+        const projectsData = await projectsResponse.json();
+        setProjects(projectsData);
+
+      } catch (e) {
+        console.error("Error fetching contest or projects:", e);
+        setContestError(e.message);
+      } finally {
+        setIsLoadingContest(false);
+      }
     };
-    setContestName(dummyContests[contestId] || `Konkurs ID: ${contestId}`);
-  }, [contestId]);
+
+    fetchData();
+  }, [contestId, API_COMPETITION_URL, API_PROJECTS_FOR_CONTEST_URL]);
 
   const handleProjectChange = (e) => {
     const { name, value } = e.target;
     setCurrentProject(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddProject = (e) => {
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCurrentProject(prev => ({ ...prev, imageFile: file }));
+      // Utwórz URL podglądu
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCurrentProject(prev => ({ ...prev, imagePreviewUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setCurrentProject(prev => ({ ...prev, imageFile: null, imagePreviewUrl: '' }));
+    }
+  };
+
+
+  const handleAddProject = async (e) => {
     e.preventDefault();
-    if (!currentProject.name || !currentProject.description || !currentProject.imageUrl) {
-      alert('Wypełnij wszystkie pola projektu!');
+    setAddProjectError(null);
+    if (!currentProject.title || !currentProject.description || !currentProject.imageFile) {
+      alert('Wypełnij wszystkie pola projektu i dodaj obrazek!');
       return;
     }
-    setProjects(prev => [...prev, { ...currentProject, id: Date.now() }]); // Tymczasowe ID
-    setCurrentProject({ name: '', description: '', imageUrl: '' }); // Reset formularza
-  };
 
-  const handlePublishAll = () => {
-    if (projects.length === 0) {
-      alert('Dodaj co najmniej jeden projekt przed opublikowaniem!');
-      return;
-    }
-    // Tutaj normalnie wysłałbyś wszystkie projects do API dla danego contestId
-    console.log(`Publikuję projekty dla konkursu ${contestId}:`, projects);
-    alert(`Opublikowano ${projects.length} projektów dla konkursu "${contestName}".`);
-    navigate('/'); // Przekieruj na stronę główną po publikacji
-  };
+    setIsAddingProject(true);
 
-  const handleImagePaste = (e) => {
-    const items = e.clipboardData.items;
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf('image') !== -1) {
-        const file = items[i].getAsFile();
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            setCurrentProject(prev => ({ ...prev, imageUrl: event.target.result }));
-          };
-          reader.readAsDataURL(file);
-          return;
-        }
+    try {
+      const imageByteArray = await fileToArrayOfNumbers(currentProject.imageFile);
+
+      const projectData = {
+        competitionId: parseInt(contestId), // Upewnij się, że to jest liczba
+        title: currentProject.title,
+        description: currentProject.description,
+        image: imageByteArray,
+        votes: 0 // Inicjalizujemy głosy na 0
+      };
+
+      const response = await fetch(API_PROJECT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(projectData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text(); // Próbujemy pobrać tekst błędu
+        throw new Error(`Failed to add project! Status: ${response.status}, Details: ${errorText}`);
       }
-    }
-    // Jeśli to nie obrazek, ale np. URL, wklej jako tekst
-    const pastedText = e.clipboardData.getData('text/plain');
-    if (pastedText.startsWith('http')) {
-        setCurrentProject(prev => ({ ...prev, imageUrl: pastedText }));
+
+      const newProject = await response.json();
+      setProjects(prev => [...prev, newProject]); // Dodaj nowy projekt do listy
+      setCurrentProject({ title: '', description: '', imageFile: null, imagePreviewUrl: '' }); // Reset formularza
+      alert('Projekt został pomyślnie dodany!');
+
+    } catch (e) {
+      console.error('Error adding project:', e);
+      setAddProjectError(e.message);
+      alert(`Wystąpił błąd podczas dodawania projektu: ${e.message}`);
+    } finally {
+      setIsAddingProject(false);
     }
   };
 
+  const handleFinishAndGoHome = () => {
+    navigate('/');
+  };
+
+
+  if (isLoadingContest) {
+    return <div className="min-h-screen bg-gray-100 p-8 text-black flex items-center justify-center">Ładowanie danych konkursu...</div>;
+  }
+
+  if (contestError) {
+    return <div className="min-h-screen bg-gray-100 p-8 text-red-500 flex items-center justify-center">Błąd ładowania konkursu: {contestError}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-8 text-black">
@@ -83,18 +158,19 @@ export default function AddProjects() {
           <h2 className="text-2xl font-bold mb-4">Dodaj Nowy Projekt</h2>
           <form onSubmit={handleAddProject} className="space-y-4">
             <div>
-              <label htmlFor="projectName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="projectTitle" className="block text-sm font-medium text-gray-700 mb-1">
                 Nazwa Projektu
               </label>
               <input
                 type="text"
-                id="projectName"
-                name="name"
-                value={currentProject.name}
+                id="projectTitle"
+                name="title" // Zmieniono z 'name' na 'title'
+                value={currentProject.title}
                 onChange={handleProjectChange}
                 className="w-full p-3 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Np. Zielone dachy w centrum"
                 required
+                disabled={isAddingProject}
               />
             </div>
             <div>
@@ -110,61 +186,71 @@ export default function AddProjects() {
                 className="w-full p-3 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Szczegółowy opis projektu..."
                 required
+                disabled={isAddingProject}
               ></textarea>
             </div>
             <div>
-              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
-                Adres URL obrazka lub wklej (Ctrl+V) obrazek/link
+              <label htmlFor="projectImage" className="block text-sm font-medium text-gray-700 mb-1">
+                Obrazek Projektu (PNG, JPG)
               </label>
               <input
-                type="text"
-                id="imageUrl"
-                name="imageUrl"
-                value={currentProject.imageUrl}
-                onChange={handleProjectChange}
-                onPaste={handleImagePaste}
-                className="w-full p-3 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://example.com/image.jpg lub wklej tutaj"
+                type="file"
+                id="projectImage"
+                name="imageFile"
+                accept="image/png, image/jpeg"
+                onChange={handleImageFileChange}
+                className="w-full p-3 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 required
+                disabled={isAddingProject}
               />
-              {currentProject.imageUrl && (
+              {currentProject.imagePreviewUrl && (
                 <div className="mt-4">
                   <p className="text-sm font-medium text-gray-700 mb-2">Podgląd obrazka:</p>
-                  <img src={currentProject.imageUrl} alt="Podgląd" className="max-w-full h-48 object-cover rounded-lg shadow-md" />
+                  <img src={currentProject.imagePreviewUrl} alt="Podgląd" className="max-w-full h-48 object-cover rounded-lg shadow-md" />
                 </div>
               )}
             </div>
+            {addProjectError && <p className="text-red-500 text-sm mt-2">{addProjectError}</p>}
             <button
               type="submit"
               className="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+              disabled={isAddingProject}
             >
-              Dodaj Projekt do Listy
+              {isAddingProject ? 'Dodawanie projektu...' : 'Dodaj Projekt'}
             </button>
           </form>
         </div>
 
-        {/* Lista dodanych projektów */}
+        {/* Lista dodanych projektów (pobranych z API) */}
         {projects.length > 0 && (
           <div className="bg-white p-8 rounded-xl shadow-lg mb-8">
-            <h2 className="text-2xl font-bold mb-4">Projekty do opublikowania ({projects.length})</h2>
+            <h2 className="text-2xl font-bold mb-4">Aktualnie dodane projekty ({projects.length})</h2>
             <div className="space-y-4">
-              {projects.map((p, index) => (
+              {projects.map((p) => (
                 <div key={p.id} className="border border-gray-200 p-4 rounded-lg flex items-center space-x-4">
-                  <img src={p.imageUrl} alt={p.name} className="w-16 h-16 object-cover rounded-md" />
+                  {/* Zakładam, że API zwraca obrazek w base64, tak jak na stronie Contest */}
+                  {p.image && (
+                    <img src={`data:image/jpeg;base64,${p.image}`} alt={p.title} className="w-16 h-16 object-cover rounded-md" />
+                  )}
                   <div>
-                    <h3 className="font-semibold text-lg">{p.name}</h3>
+                    <h3 className="font-semibold text-lg">{p.title}</h3>
                     <p className="text-sm text-gray-600 truncate">{p.description}</p>
                   </div>
                 </div>
               ))}
             </div>
             <button
-              onClick={handlePublishAll}
+              onClick={handleFinishAndGoHome}
               className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors mt-6"
             >
-              Opublikuj Wszystkie Projekty
+              Zakończ dodawanie i wróć na stronę główną
             </button>
           </div>
+        )}
+        {projects.length === 0 && !isLoadingContest && (
+            <div className="text-center text-gray-600 p-4">
+                Brak dodanych projektów dla tego konkursu. Dodaj pierwszy projekt powyżej!
+            </div>
         )}
       </div>
     </div>

@@ -4,24 +4,48 @@ import { useNavigate } from 'react-router-dom';
 
 export default function CreateContest() {
   const [contestName, setContestName] = useState('');
-  const [contestDescription, setContestDescription] = useState('');
+  const [loading, setLoading] = useState(false); // Stan do obsługi ładowania
+  const [error, setError] = useState(null); // Stan do obsługi błędów
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const API_COMPETITION_URL = 'https://io-aplikacja-do-glosowania-1.onrender.com/api/competition';
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!contestName || !contestDescription) {
-      alert('Wypełnij wszystkie pola!');
+    setError(null); // Resetuj błędy
+    if (!contestName) {
+      alert('Wypełnij nazwę konkursu!');
       return;
     }
-    // Tutaj normalnie wysłałbyś dane do API
-    console.log('Nowy konkurs:', { contestName, contestDescription });
 
-    // Po utworzeniu konkursu (lub otrzymaniu jego ID z API),
-    // przekierowujemy na stronę dodawania projektów
-    // Na razie użyjemy tymczasowego ID, np. 999
-    const newContestId = 999;
-    alert(`Konkurs "${contestName}" został utworzony. Przejdź do dodawania projektów.`);
-    navigate(`/admin/add-projects/${newContestId}`);
+    setLoading(true); // Ustaw stan ładowania na true
+
+    try {
+      const response = await fetch(API_COMPETITION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ "name" : contestName }), // Wysyłamy tylko 'name'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+      }
+
+      const newContest = await response.json();
+      const newContestId = newContest.id; // Zakładamy, że API zwraca obiekt z ID nowo utworzonego konkursu
+
+      alert(`Konkurs "${contestName}" został utworzony (ID: ${newContestId}). Przejdź do dodawania projektów.`);
+      navigate(`/admin/add-projects/${newContestId}`);
+    } catch (e) {
+      console.error('Błąd podczas tworzenia konkursu:', e);
+      setError(e.message);
+      alert(`Wystąpił błąd: ${e.message}`);
+    } finally {
+      setLoading(false); // Zawsze ustawiaj stan ładowania na false po zakończeniu
+    }
   };
 
   return (
@@ -41,27 +65,16 @@ export default function CreateContest() {
               className="w-full p-3 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Np. Budżet obywatelski Kraków 2025"
               required
+              disabled={loading} /* Wyłącz pole, gdy trwa ładowanie */
             />
           </div>
-          <div>
-            <label htmlFor="contestDescription" className="block text-sm font-medium text-gray-700 mb-1">
-              Opis Konkursu
-            </label>
-            <textarea
-              id="contestDescription"
-              value={contestDescription}
-              onChange={(e) => setContestDescription(e.target.value)}
-              rows="4"
-              className="w-full p-3 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Szczegółowy opis konkursu..."
-              required
-            ></textarea>
-          </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>} {/* Wyświetl błąd, jeśli wystąpi */}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            disabled={loading} // Wyłącz przycisk, gdy trwa ładowanie
           >
-            Utwórz Konkurs i Dodaj Projekty
+            {loading ? 'Tworzenie konkursu...' : 'Utwórz Konkurs i Dodaj Projekty'}
           </button>
         </form>
       </div>
