@@ -1,13 +1,17 @@
 package com.example.demo.service;
 
-import com.example.demo.module.Competicion;
+import com.example.demo.module.Competition;
 import com.example.demo.module.Project; // <-- Make sure this is your Project class
-import com.example.demo.repository.CompeticionRepository;
+import com.example.demo.repository.CompetitionRepository;
 import com.example.demo.repository.ProjectRepository; // <-- Make sure this is your Project repo
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.FileCopyUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,12 +19,12 @@ import java.util.List;
 public class DataInitializer implements CommandLineRunner {
 
     // 1. Inject the repositories you need
-    private final CompeticionRepository competicionRepository;
+    private final CompetitionRepository competitionRepository;
     private final ProjectRepository projectRepository;
 
-    public DataInitializer(CompeticionRepository competicionRepository,
+    public DataInitializer(CompetitionRepository competitionRepository,
                            ProjectRepository projectRepository) {
-        this.competicionRepository = competicionRepository;
+        this.competitionRepository = competitionRepository;
         this.projectRepository = projectRepository;
     }
 
@@ -29,29 +33,70 @@ public class DataInitializer implements CommandLineRunner {
 
         System.out.println("Starting data initialization...");
 
-        // 2. Create and Save the main Competicion
-        Competicion competicion = new Competicion(
+        // 2. Create and Save the main Competition
+        Competition competition = new Competition(
                 "Budżet Obywatelski 2025 - Pula Ogólnomiejska",
+                new ArrayList<>() // Start with an empty list of voters
+        );
+        Competition competition2 = new Competition(
+                "Budżet Obywatelski 2024 - Pula Ogólnomiejska",
+                new ArrayList<>() // Start with an empty list of voters
+        );
+        Competition competition3 = new Competition(
+                "Budżet Obywatelski 2023 - Pula Ogólnomiejska",
                 new ArrayList<>() // Start with an empty list of voters
         );
 
         // Save it and get the managed object (which has the generated ID)
-        Competicion savedCompeticion = competicionRepository.save(competicion);
+        Competition savedCompetition = competitionRepository.save(competition);
+        Competition savedCompetition2 = competitionRepository.save(competition2);
+        Competition savedCompetition3 = competitionRepository.save(competition3);
 
-        System.out.println("Created Competicion with ID: " + savedCompeticion.getId());
+        System.out.println("Created Competition with ID: " + savedCompetition.getId());
+        String kalenistenikParkPath="static/plac dla kalesniteników.jpg";
+        String fontannaPath="static/fontanna.jpg";
+        String childernpart="static/plac zabaw.jpg";
 
-        // 3. Create Projects linked to the saved Competicion
-        // I'm assuming your Project class has a constructor like:
-        // public Project(String name, String description, Competicion competicion)
+        byte[] kalenistenikBytes = loadBytesFromClasspath(kalenistenikParkPath);
+        byte[] fontannaBytes = loadBytesFromClasspath(fontannaPath);
+        byte[] childernpartBytes = loadBytesFromClasspath(childernpart);
 
-        Project proj1 = new Project(competicion.getId(),"plac zabaw1", "Projekt placu zabaw dla dzieci.","des3",0);
-        Project proj2 = new Project(competicion.getId(),"plac zabaw2", "Projekt placu zabaw dla dzieci.","des2",0);
-        Project proj3 = new Project(competicion.getId(),"plac zabaw3", "Projekt placu zabaw dla dzieci.","des1",0);
+        Project proj1 = new Project("Projekt placu zabaw dla dzieci.", "plac zabaw1",kalenistenikBytes,0,competition.getId());
+        Project proj2 = new Project("fontanna na wydziale WIEIT.", "bardzo ciekawe lorem ipsum na temat fontanny",fontannaBytes,0,competition.getId());
+        Project proj3 = new Project("plac zabaw ba bronowicahc", "plac zabaw to przyszłocćpolaków , dzięki któremu nasze dziecię będąw 100% skuteczne na rynku pracy",childernpartBytes,0,competition.getId());
 
-        // 4. Save all the new projects
         projectRepository.saveAll(List.of(proj1, proj2, proj3));
+        Project proj7 = new Project("Projekt trampoliny dla dzieci.", "plac zabaw1",kalenistenikBytes,0,competition2.getId());
+        Project proj8 = new Project("fontanna na wydziale WEIP.", "bardzo ciekawe lorem ipsum na temat fontanny",fontannaBytes,0,competition2.getId());
+        Project proj9 = new Project("plac zabaw", "plac zabaw to przyszłocćpolaków , dzięki któremu nasze dziecię będąw 100% skuteczne na rynku pracy",childernpartBytes,0,competition2.getId());
 
-        System.out.println("Created 3 new projects linked to the competicion.");
+        projectRepository.saveAll(List.of(proj7, proj8, proj9));
+        Project proj4 = new Project("Projekt lotniska", "plac zabaw1",kalenistenikBytes,0,competition3.getId());
+        Project proj5 = new Project("Ławki na wydziale WIEIT.", "bardzo ciekawe lorem ipsum na temat fontanny",fontannaBytes,0,competition3.getId());
+        Project proj6 = new Project("plac zabaw na rynku", "plac zabaw to przyszłocćpolaków , dzięki któremu nasze dziecię będąw 100% skuteczne na rynku pracy",childernpartBytes,0,competition3.getId());
+
+        projectRepository.saveAll(List.of(proj4, proj5, proj6));
+
+        System.out.println("Created 3 new projects linked to the competition.");
         System.out.println("Data initialization complete.");
     }
+    public static byte[] loadBytesFromClasspath(String path) throws IOException {
+        // ClassPathResource is a Spring utility that makes this easy
+        ClassPathResource resource = new ClassPathResource(path);
+
+        if (!resource.exists()) {
+            throw new IOException("File not found at classpath path: " + path);
+        }
+
+        // Open an InputStream to the resource
+        try (InputStream inputStream = resource.getInputStream()) {
+            // Spring's FileCopyUtils can easily copy the stream to a byte array
+            return FileCopyUtils.copyToByteArray(inputStream);
+
+            // Or using pure Java (since Java 9+):
+            // return inputStream.readAllBytes();
+        }
+    }
+
+
 }

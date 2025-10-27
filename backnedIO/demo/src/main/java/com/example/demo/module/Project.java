@@ -1,33 +1,31 @@
 package com.example.demo.module;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-public class    Project {
+public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private Long competicionId;
-    private String name;
+    private Long competitionId;
     private String title;
     private String description;
+    @Column(name = "data", columnDefinition="LONGBLOB")
+    private byte[] image;
     private long votes;
 
     public Project(){}
 
-    public Project(Long competicionId, String name, String title, String description, long votes) {
-        this.competicionId = competicionId;
-        this.name = name;
+    public Project(String title, String description, byte[] image, long votes, long competitionId) {
+        this.competitionId = competitionId;
         this.title = title;
         this.description = description;
+        this.image = image;
         this.votes = votes;
     }
 }

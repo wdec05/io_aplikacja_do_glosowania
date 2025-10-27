@@ -17,35 +17,41 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // 1. ENABLE CORS and tell Spring to use the bean below
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
 
-                // !!! --- DODAJ TĘ CZĘŚĆ --- !!!
-                // To jest potrzebne, aby konsola H2 (która działa w ramce) mogła się wyświetlić
+                // 2. Disable CSRF (this is correct)
+                .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
                 )
-                // !!! --- KONIEC SEKCJI --- !!!
-
+                // 3. Make ALL endpoints public (no authentication required)
                 .authorizeHttpRequests(auth -> auth
-                        // Musisz także jawnie zezwolić na żądania do konsoli H2
-                        .requestMatchers("/h2-console/**").permitAll()
-                        // Reszta Twoich reguł
                         .anyRequest().permitAll()
                 );
 
         return http.build();
     }
 
-    // Bean CorsConfigurationSource pozostaje bez zmian
+    // 4. This bean defines the "allow-all" CORS policy
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+
+        // This is the correct way to allow all origins
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+
+        // Allow all standard methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        // Allow all headers
         configuration.setAllowedHeaders(Arrays.asList("*"));
+
+        // Allow credentials (e.g., cookies)
         configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Apply this policy to every path in your application
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }

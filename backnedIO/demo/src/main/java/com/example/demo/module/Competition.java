@@ -9,7 +9,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Competicion {
+public class Competition {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -17,17 +17,17 @@ public class Competicion {
     @ElementCollection
     private List<Long> emailsthat_voted;
 
-    Competicion(){}
+   public Competition(){}
 
-    public Competicion(String name, List<Long> emailsthat_voted) {
+    public Competition(String name, List<Long> emailsthat_voted) {
         this.name = name;
         this.emailsthat_voted = emailsthat_voted;
     }
-    public Competicion(String name){
+    public Competition(String name){
         this.name = name;
     }
 
-    //return all competicions that exists in database
+    //return all Competitions that exists in database
     // return all projects by competition ID
     // create competition endpint
     // crate Project
