@@ -22,7 +22,7 @@ public class CompetitionService {
     }
 
     @Transactional
-    public void saveCompetition(Competition competition) {competitionRepository.save(competition);}
+    public Competition saveCompetition(Competition competition) {return competitionRepository.save(competition);}
     public List<Competition> getAllCompetitions() {return competitionRepository.findAll();}
 
     public void voteByEmail(String email, Long projectId){

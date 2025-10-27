@@ -16,8 +16,8 @@ public class CompetitionController {
 
     @PostMapping
     @ResponseStatus(org.springframework.http.HttpStatus.OK)
-    public void saveCompetition(@RequestBody Competition competition) {
-        competitionService.saveCompetition(competition);
+    public Competition saveCompetition(@RequestBody Competition competition) {
+        return competitionService.saveCompetition(competition);
     }
 
     @GetMapping
