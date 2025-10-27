@@ -9,7 +9,7 @@ export default function Home() {
   // Upewnij się, że ten URL jest poprawny dla Twojego uruchomionego backendu!
   // Np. 'http://localhost:8080/api/competicion' jeśli backend jest lokalnie
   // lub 'http://3.69.167.48:8080/api/competicion' jeśli jest na serwerze
-  const API_CONTESTS_URL ='https://io-aplikacja-do-glosowania-1.onrender.com/api/user'; 
+  const API_CONTESTS_URL ='https://io-aplikacja-do-glosowania-1.onrender.com/api/competition'; 
 
   useEffect(() => {
     const fetchContests = async () => {
@@ -77,7 +77,7 @@ export default function Home() {
             key={contest.id}
             className="bg-white border border-gray-200 shadow-md rounded-2xl p-6 text-center hover:shadow-lg transition-shadow"
           >
-            <h2 className="text-xl font-semibold mb-2">Nr:{contest.id} {contest.email}</h2>
+            <h2 className="text-xl font-semibold mb-2">{contest.id}: {contest.name}</h2>
             {/* Upewnij się, że obiekt contest ma pole 'description' */}
             <p className="text-gray-700 mb-4">{contest.email}</p> 
             <a

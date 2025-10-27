@@ -2,63 +2,106 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 export default function Contest() {
-  const { id } = useParams();
+  const { id } = useParams(); // 'id' from the URL parameter (e.g., /contest/1)
   const [contest, setContest] = useState(null);
   const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // przykładowe dane – później podmienisz na API
+  const API_PROJECTS_URL = `https://io-aplikacja-do-glosowania-1.onrender.com/api/project/competition/${id}`;
+  const API_COMPETITION_URL = `https://io-aplikacja-do-glosowania-1.onrender.com/api/competition/${id}`;
+
+
   useEffect(() => {
-    const contests = {
-      1: {
-        name: "Budżet obywatelski Kraków 2025",
-        projects: [
-          { id: 101, name: "Więcej zieleni w Nowej Hucie", votes: 123 },
-          { id: 102, name: "Remont chodników na Kazimierzu", votes: 87 },
-          { id: 103, name: "Nowy skatepark na Prądniku", votes: 56 },
-        ],
-      },
-      2: {
-        name: "Zielone Inicjatywy 2025",
-        projects: [
-          { id: 201, name: "Park kieszonkowy w centrum", votes: 42 },
-          { id: 202, name: "Pszczoły miejskie – ule na dachach", votes: 65 },
-        ],
-      },
+    const fetchContestAndProjects = async () => {
+      try {
+        // Fetch competition details
+        const competitionResponse = await fetch(API_COMPETITION_URL);
+        if (!competitionResponse.ok) {
+          throw new Error(`HTTP error! Status: ${competitionResponse.status}`);
+        }
+        const competitionData = await competitionResponse.json();
+        setContest(competitionData);
+
+        // Fetch projects for the competition
+        const projectsResponse = await fetch(API_PROJECTS_URL);
+        if (!projectsResponse.ok) {
+          throw new Error(`HTTP error! Status: ${projectsResponse.status}`);
+        }
+        const projectsData = await projectsResponse.json();
+        setProjects(projectsData);
+
+      } catch (e) {
+        console.error("Error fetching contest or projects:", e);
+        setError(e);
+      } finally {
+        setLoading(false);
+      }
     };
-    const c = contests[id];
-    setContest(c);
-    setProjects(c?.projects || []);
-  }, [id]);
+
+    fetchContestAndProjects();
+  }, [id, API_PROJECTS_URL, API_COMPETITION_URL]);
 
   const handleVote = (projectId) => {
-    // tu później będzie wywołanie API (np. vote(projectId, email))
+    // This will be replaced with actual API call to register a vote
     alert(`Oddano głos na projekt ID: ${projectId}`);
   };
 
-  if (!contest) return <p className="p-6 text-center text-black">Ładowanie...</p>; // Dodaj text-black również tutaj
+  if (loading) {
+    return <div className="min-h-screen bg-white text-black py-12 px-4 flex flex-col items-center justify-center">Loading contest details...</div>;
+  }
+
+  if (error) {
+    return <div className="min-h-screen bg-white text-red-500 py-12 px-4 flex flex-col items-center justify-center">Error: {error.message}</div>;
+  }
+
+  if (!contest) {
+    return <div className="min-h-screen bg-white text-black py-12 px-4 flex flex-col items-center justify-center">Contest not found.</div>;
+  }
 
   return (
-    // Główny kontener - dodaj text-black
-    <div className="min-h-screen bg-gray-50 p-8 text-black">
-      {/* Nagłówek - dodaj text-black dla pewności */}
-      <h1 className="text-3xl font-bold mb-6 text-center text-black">{contest.name}</h1>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((p) => (
-          <div
-            key={p.id}
-            className="bg-white rounded-2xl shadow p-6 hover:shadow-lg transition-shadow"
-          >
-            <h2 className="text-xl font-semibold mb-2">{p.name}</h2>
-            {/* Tekst liczby głosów - zmień z text-gray-600 na text-black */}
-            <p className="text-black mb-4">Oddane głosy: {p.votes}</p>
-            <button
-              onClick={() => handleVote(p.id)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-            >
-              Głosuj
-            </button>
+    <div className="min-h-screen bg-white text-black py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-8">{contest.name}</h1>
+
+        {/* Display project images if available (assuming each project has its own base64 image) */}
+        {projects.length === 0 ? (
+          <p className="text-center text-lg">Brak projektów dla tego konkursu.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project) => (
+              <div key={project.id} className="bg-gray-100 p-6 rounded-lg shadow-md flex flex-col justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold mb-2">{project.title}</h2> {/* Use project.title */}
+                  <p className="text-gray-700 mb-4">{project.description}</p>
+                  
+                  {/* Display project image from base64 string */}
+                  {project.image && (
+                    <div className="mb-4 flex justify-center">
+                      <img
+                        src={`data:image/jpeg;base64,${project.image}`} // Assuming it's JPEG. Adjust if it's PNG etc.
+                        alt={`Obraz dla projektu ${project.title}`}
+                        className="rounded-lg shadow-sm max-h-48 object-cover w-full"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  {/* Zakładam, że głosy (votes) są częścią obiektu projektu, ale nie było ich w przykładzie JSON.
+                      Jeśli ich nie ma, to pole 'votes' trzeba będzie dodać do obiektu projektu na backendzie,
+                      albo pobierać je z innego endpointu. */}
+                  <span className="text-xl font-bold text-blue-600">{project.votes || 0} głosów</span>
+                  <button
+                    onClick={() => handleVote(project.id)}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Oddaj Głos
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
