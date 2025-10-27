@@ -29,6 +29,9 @@ public class CompetitionService {
         MyUser myUser =myUserService.findByEmail(email);
         Project project = projectRepository.findById(projectId).get();
         Competition competition = competitionRepository.findById(project.getCompetitionId()).orElse(null);
+        if(competition.getEmailsthat_voted().contains(email)){
+            throw new RuntimeException("email already voted");
+        }
         if(competition != null){
             project.setVotes(project.getVotes() + 1);
             competition.getEmailsthat_voted().add(myUser.getId());
