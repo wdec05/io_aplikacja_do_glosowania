@@ -1,17 +1,29 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 export default function Contest() {
   const { id } = useParams(); // 'id' from the URL parameter (e.g., /contest/1)
+  const navigate = useNavigate();
+
   const [contest, setContest] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [userEmail, setUserEmail] = useState(null);
+
   const API_PROJECTS_URL = `https://io-aplikacja-do-glosowania-1.onrender.com/api/project/competition/${id}`;
   const API_COMPETITION_URL = `https://io-aplikacja-do-glosowania-1.onrender.com/api/competition/${id}`;
 
   useEffect(() => {
+    const savedEmail = sessionStorage.getItem('userEmail');
+    if (!savedEmail) {
+      alert("Nie podano adresu e-mail! Proszę najpierw go wprowadzić, aby móc głosować.");
+      navigate('/'); 
+      return; 
+    }
+    setUserEmail(savedEmail);
+
     const fetchContestAndProjects = async () => {
       try {
         // Fetch competition details
@@ -38,11 +50,30 @@ export default function Contest() {
     };
 
     fetchContestAndProjects();
-  }, [id, API_PROJECTS_URL, API_COMPETITION_URL]);
+  }, [id, API_PROJECTS_URL, API_COMPETITION_URL, navigate]);
 
-  const handleVote = (projectId) => {
-    // This will be replaced with actual API call to register a vote
-    alert(`Oddano głos na projekt ID: ${projectId}`);
+  const handleVote = async (projectId) => {
+    const VOTE_API_URL = `${API_BASE_URL}/project/${projectId}/vote`;
+
+    try {
+      // Wysłanie zapytania POST z e-mailem użytkownika w ciele żądania.
+      const response = await fetch(VOTE_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: userEmail }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: "Szczegóły błędu są niedostępne." }));
+        throw new Error(errorData.message || `Błąd HTTP! Status: ${response.status}`);
+      }
+      
+    } catch (e) {
+      console.error("Błąd podczas głosowania:", e);
+      alert(`Wystąpił błąd podczas głosowania: ${e.message}`);
+    }
   };
 
   if (loading) {
