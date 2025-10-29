@@ -1,17 +1,30 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 export default function Contest() {
   const { id } = useParams(); // 'id' from the URL parameter (e.g., /contest/1)
+  const navigate = useNavigate();
+
   const [contest, setContest] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [userEmail, setUserEmail] = useState(null);
+
   const API_PROJECTS_URL = `https://io-aplikacja-do-glosowania-1.onrender.com/api/project/competition/${id}`;
   const API_COMPETITION_URL = `https://io-aplikacja-do-glosowania-1.onrender.com/api/competition/${id}`;
+  const API_BASE_URL = 'https://io-aplikacja-do-glosowania-1.onrender.com'
 
   useEffect(() => {
+    const savedEmail = sessionStorage.getItem('userEmail');
+    if (!savedEmail) {
+      alert("Nie podano adresu e-mail! Proszę najpierw go wprowadzić, aby móc głosować.");
+      navigate('/'); 
+      return; 
+    }
+    setUserEmail(savedEmail);
+
     const fetchContestAndProjects = async () => {
       try {
         // Fetch competition details
@@ -38,11 +51,65 @@ export default function Contest() {
     };
 
     fetchContestAndProjects();
-  }, [id, API_PROJECTS_URL, API_COMPETITION_URL]);
+  }, [id, API_PROJECTS_URL, API_COMPETITION_URL, navigate]);
+	// NOTE Here i add my function
+//
+// const handleVote = async (projectId) => {
+// 	const VOTE_MAIL_API_URL = `${API_BASE_URL}/api/mail/${userEmail}?projectId=${projectId}`;
+//
+//     try {
+//       // Wywołanie API, które jednocześnie rejestruje głos i wysyła e-mail
+//       const response = await fetch(VOTE_MAIL_API_URL, {
+//         method: 'GET', // Zgodnie z dokumentacją i przykładem URL
+//         // Brak body dla metody GET
+//       });
+//
+//       if (!response.ok) {
+//         const errorData = await response.json().catch(() => ({ message: "Szczegóły błędu są niedostępne." }));
+//         // Tutaj serwer powinien zwrócić błędy typu "Użytkownik nie istnieje", "Projekt nie istnieje", "Już zagłosowałeś"
+//         throw new Error(errorData.message || `Błąd HTTP! Status: ${response.status}`);
+//       }
+//
+//       console.log(`Głos na projekt ${projectId} od ${userEmail} został zarejestrowany i wysłano e-mail!`);
+//       alert(`Twój głos na projekt ${projectId} został pomyślnie oddany! Sprawdź skrzynkę odbiorczą.`);
+//
+//       // Tutaj możesz odświeżyć dane, np. listę projektów, aby pokazać zaktualizowaną liczbę głosów
+//       // fetchProjects();
+//
+//     } catch (e) {
+//       console.error("Błąd podczas głosowania:", e);
+//       alert(`Wystąpił błąd podczas głosowania: ${e.message}`);
+//     }
+//   };
+//
+//
+	//TODO: Trzeba to jeszcze dokończyć, nie zapisują się voty
+  const handleVote = async (projectId) => {
+    // const VOTE_API_URL = `${API_BASE_URL}/project/${projectId}/vote`;
+ 	const VOTE_API_URL = `${API_BASE_URL}/api/mail/${userEmail}?projectId=${projectId}`;
 
-  const handleVote = (projectId) => {
-    // This will be replaced with actual API call to register a vote
-    alert(`Oddano głos na projekt ID: ${projectId}`);
+    try {
+      // Wysłanie zapytania POST z e-mailem użytkownika w ciele żądania.
+      const response = await fetch(VOTE_API_URL, {
+
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: userEmail }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: "Szczegóły błędu są niedostępne." }));
+        throw new Error(errorData.message || `Błąd HTTP! Status: ${response.status}`);
+      }
+
+	console.log("Głos zarejestrowany");
+
+    } catch (e) {
+      console.error("Błąd podczas głosowania:", e);
+      alert(`Wystąpił błąd podczas głosowania: ${e.message}`);
+    }
   };
 
   if (loading) {
