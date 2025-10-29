@@ -54,7 +54,7 @@ export default function Contest() {
   }, [id, API_PROJECTS_URL, API_COMPETITION_URL, navigate]);
 	// NOTE Here i add my function
 	
-
+const handleVote = async (projectId) => {
 	const VOTE_MAIL_API_URL = `${API_BASE_URL}/api/mail/${userEmail}?projectId=${projectId}`;
 
     try {
