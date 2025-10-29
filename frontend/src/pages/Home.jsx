@@ -14,6 +14,7 @@ export default function Home() {
   // Np. 'http://localhost:8080/api/competicion' jeśli backend jest lokalnie
   // lub 'http://3.69.167.48:8080/api/competicion' jeśli jest na serwerze
   const API_CONTESTS_URL ='https://io-aplikacja-do-glosowania-1.onrender.com/api/competition'; 
+  const API_EMAIL_URL ='https://io-aplikacja-do-glosowania-1.onrender.com/api/user'; 
 
   useEffect(() => {
 
@@ -50,7 +51,7 @@ export default function Home() {
     setIsSubmitting(true);
     try {
       // Wysyłamy e-mail na backend, aby "zapisać" użytkownika na potrzeby głosowania
-      const response = await fetch(`${API_BASE_URL}/user`, {
+      const response = await fetch(`${API_EMAIL_URL}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email }),
