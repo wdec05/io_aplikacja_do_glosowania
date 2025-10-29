@@ -29,7 +29,7 @@ public class CompetitionService {
         MyUser myUser =myUserService.findByEmail(email);
         Project project = projectRepository.findById(projectId).get();
         Competition competition = competitionRepository.findById(project.getCompetitionId()).orElse(null);
-        if(competition.getEmailsthat_voted().contains(email)){
+        if(competition.getEmailsthat_voted().contains(myUser.getId())){
             throw new RuntimeException("email already voted");
         }
         if(competition != null){
